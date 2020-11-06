@@ -49,21 +49,19 @@ define('_EC_', " -->"."\n");
 // -----------------------------------------------------------------------------
 
 
-function subtrace_line($line)
+function str_prog_line_millis($line)
 {
 	return sprintf(" %s:%d; millis:%d;",  __PROG__, $line, millis());
 }
 
-function trace_line($line)
+function strace_line($line)
 {
-//	return sprintf(_BC_._DG_." %s:%d; millis:%d;"._EC_,  __PROG__, $line, millis());
-	return sprintf(_BC_._DG_.sprintf($line)._EC_);
+	return sprintf(_BC_._DG_.str_prog_line_millis($line)._EC_);
 }
 
-function trace_line_message($line, $message)
+function strace_line_message($line, $message)
 {
-//	return sprintf(_BC_._DG_." %s:%d; millis:%d; message:%s;"._EC_,  __PROG__, $line, millis(), ve($message));
-	return sprintf(_BC_._DG_.subtrace_line($line).sprintf(" message:%s;", ve($message))._EC_);
+	return sprintf(_BC_._DG_.str_prog_line_millis($line).sprintf(" message:%s;", ve($message))._EC_);
 }
 
 
@@ -404,7 +402,7 @@ $response = '';
 
 
 //if ($debug) $response .= __LINE__.':'.SP.SCRIPT_HREF.NL;
-if ($debug) $response .= trace_line_message(__LINE__, SCRIPT_HREF);
+if ($debug) $response .= strace_line_message(__LINE__, SCRIPT_HREF);
 
 
 // ----------------------------------------------------------------------------
@@ -434,7 +432,7 @@ if ($init || $check)
 	// retrieve list of device and then assert $comm_port into
 	$comm_list = comm_list_getall();
 //	if ($debug) $response .= __LINE__.':'.SP.ve($comm_list).NL;
-	if ($debug) $response .= trace_line_message(__LINE__, $comm_list);
+	if ($debug) $response .= strace_line_message(__LINE__, $comm_list);
 	if (array_search($comm_port, $comm_list)===false)
 		trigger_error("if (array_search(comm_port,comm_list)===false)", E_USER_ERROR);
 
@@ -443,7 +441,7 @@ if ($init || $check)
 //echo __LINE__,':';
 //echo ve($comm_status),NL;
 //	if ($debug) $response .= __LINE__.':'.SP.ve($comm_status).NL;
-	if ($debug) $response .= trace_line_message(__LINE__, $comm_status);
+	if ($debug) $response .= strace_line_message(__LINE__, $comm_status);
 	if ($comm_status !== comm_settings_arduino())
 		if (!$init)
 			trigger_error("if (comm_status !== comm_settings_arduino())", E_USER_ERROR);
@@ -456,7 +454,7 @@ if ($init && $put_settings_needed || $put)
 	// put settings
 	$comm_status = comm_settings_put($comm_port, comm_settings_arduino());
 //	if ($debug) $response .= __LINE__.':'.SP.ve($comm_status).NL;
-	if ($debug) $response .= trace_line_message(__LINE__, $comm_status);
+	if ($debug) $response .= strace_line_message(__LINE__, $comm_status);
 	if ($comm_status !== comm_settings_arduino())
 		trigger_error("if (comm_status !== comm_settings_arduino())", E_USER_ERROR);
 	$flush_input_needed = true;
@@ -467,7 +465,7 @@ if ($init && $flush_input_needed || $flush)
 	// flush receive result from Arduino
 	$retcode = program_exec(SERIAL_EXE, [0, $comm_port, 100], $comm_answer);
 //	if ($debug) $response .= __LINE__.':'.SP.$retcode.SP.ve($comm_answer).NL;
-	if ($debug) $response .= trace_line_message(__LINE__, $retcode.SP.$comm_answer);
+	if ($debug) $response .= strace_line_message(__LINE__, $retcode.SP.$comm_answer);
 }
 
 }
@@ -481,7 +479,7 @@ if ($check)
 	// check communication with Arduino
 	$retcode = program_exec(SERIAL_EXE, [0, $comm_port, 100, "/millis"], $comm_check);
 //	if ($debug) $response .= __LINE__.':'.SP.$retcode.SP.ve($comm_check).NL;
-	if ($debug) $response .= trace_line_message(__LINE__, $retcode.SP.$comm_check);
+	if ($debug) $response .= strace_line_message(__LINE__, $retcode.SP.$comm_check);
 }
 else
 {
@@ -536,8 +534,7 @@ if (strlen($return))
 if (strlen($tx_argument))
 {
 	$retcode = program_exec(SERIAL_EXE, [$cmd_options, $comm_port, $rx_timeout, $tx_argument], $comm_answer);
-//	if ($debug) $response .= __LINE__.':'.SP.ve($comm_answer).NL;
-	if ($debug) $response .= trace_line_message(__LINE__, $comm_answer);
+	if ($debug) $response .= strace_line_message(__LINE__, $comm_answer);
 	$response .= $comm_answer;
 
 //	//$response = str_replace('<style>', '<style>body {margin:auto; width:400px;} ', $response);
@@ -550,53 +547,9 @@ if (strlen($tx_argument))
 
 if ($retcode != 0)
 {
-//	$response .= '<!--'.'#ER#'.$retcode.' -->'.NL;
-	$response .= _BC_._ER_.subtrace_line(__LINE__).' retcode:'.$retcode.';'._EC_;
+	$response .= _BC_._ER_.str_prog_line_millis(__LINE__).' retcode:'.$retcode.';'._EC_;
 }
  
-
-// ----------------------------------------------------------------------------
-
-/*
-
-// echo content with a content-type...
-
-if (substr($tx_argument, -5) == ".html" ||
-	substr($tx_argument, -4) == ".htm" ||
-	substr($tx_argument, -4) == ".php" ||
-	substr($tx_argument, 0, 1) == '/' && substr($tx_argument, -1) == "/")
-//then
-	echo_content( $response, ['NO_CACHE','ALLOW_ORIGIN_ALL','TEXT_HTML'] );
-else
-if (substr($tx_argument, -4) == ".css")
-//then
-	echo_content( $response, ['NO_CACHE','ALLOW_ORIGIN_ALL','TEXT_CSS'] );
-else
-if (substr($tx_argument, -3) == ".js")
-//then
-	echo_content( $response, ['NO_CACHE','ALLOW_ORIGIN_ALL','APPLICATION_JAVASCRIPT'] );
-else
-if (substr($tx_argument, -5) == ".json")
-//then
-	echo_content( $response, ['NO_CACHE','ALLOW_ORIGIN_ALL','APPLICATION_JSON'] );
-else
-if (substr($tx_argument, -6) == ".jsonp")
-//then
-	echo_content( $response, ['NO_CACHE','ALLOW_ORIGIN_ALL','APPLICATION_JAVASCRIPT'] );
-else
-if (substr($tx_argument, -4) == ".xml")
-//then
-	echo_content( $response, ['NO_CACHE','ALLOW_ORIGIN_ALL','APPLICATION_XML'] );
-else
-if (substr($tx_argument, -4) == ".csv")
-//then
-	echo_content( $response, ['NO_CACHE','ALLOW_ORIGIN_ALL','TEXT_CSV'] );
-else
-//default...
-//content-type text/plain
-	echo_content( $response, ['NO_CACHE','ALLOW_ORIGIN_ALL','TEXT_PLAIN'] );
-
-*/
 
 // ----------------------------------------------------------------------------
 
@@ -661,37 +614,18 @@ function include_php_text($t1)
 //	echo($t1);
 //	return;
 
-/*	
-//	$t1 = 
-//	"<?=1234?>\n" .
-//	"abcd<title>\n" .
-//	"<?php\necho 5678?>\n" .
-//	"ijkl\n";
-*/	
-
 	if (strlen($t1) == 0) return;
 	
 	define('PHP0', '<\?');
-//	define('PHP1', '<\?(php)(\r\n|\r|\n|\s)');
 	define('PHP1', '<\?php\s');
-//	define('PHP2', '<\?(=)()');
 	define('PHP2', '<\?=');
-//	define('PHP3', '<\?()()');
 	define('PHP3', '<\?');
 	define('PHP9', '\?>\R');
 
-/*	preg_match_all('/<\?(=|php)?[^?]*\?>|([^<]|<(?!\?(=|php)?[^?]*\?>))+/', $t1, $a1, PREG_SET_ORDER);	*/
-/*	preg_match_all('/(<\?(=|php)?)[^?]*(\?>)|([^<]|<(?!\?(=|php)?[^?]*\?>))+/', $t1, $a1, PREG_SET_ORDER);	*/
 	preg_match_all(
 		'/' .
-//		'('.PHP1.'|'.PHP2.'|'.PHP3.')' . '[^?]*' . '('.PHP9.')' .
 		'('.PHP1.'|'.PHP2.'|'.PHP3.')' . '((?!'.PHP9.').*)' . '('.PHP9.')' .
 		'|' .
-//		'([^<]|<(?!\?(=|php)?[^?]*'.PHP9.'))' .
-//		'(.|\R)+(?=' . '('.PHP1.'|'.PHP2.'|'.PHP3.')' . '((?!'.PHP9.').*)' . '('.PHP9.')' .')' .
-//		'((?!'.PHP0.')[\r\n\t 0-9a-z]+)' .
-//		'(((?!'.PHP0.')(.|\R))+)' .
-//		'((?!'.PHP1.'|'.PHP2.'|'.PHP3.')(.|\R))+' .
 		'((?!'.PHP1.'|'.PHP2.'|'.PHP3.').|(?!'.PHP1.'|'.PHP2.'|'.PHP3.')\R)+' .
 		'/',
 		$t1, $a1, PREG_SET_ORDER);
@@ -703,22 +637,16 @@ function include_php_text($t1)
 	{
 		if (substr($t2[0],0,5) == '<'.'?'.'php')
 		{
-		//	eval(substr($t2[0],5,strlen($t2[0])-5-2));
-//			eval(substr($t2[0],5,strlen($t2[0])-5-2).';');
 			eval( substr($t2[0],strlen($t2[1]),strlen($t2[0])-strlen($t2[1])-strlen($t2[count($t2)-1])).';' );
 		}
 		else
 		if (substr($t2[0],0,3) == '<'.'?'.'=')
 		{
-		//	eval('echo '.substr($t2[0],3,strlen($t2[0])-3-2));
-//			eval('echo '.substr($t2[0],3,strlen($t2[0])-3-2).';');
 			eval( 'echo '.substr($t2[0],strlen($t2[1]),strlen($t2[0])-strlen($t2[1])-strlen($t2[count($t2)-1])).';' );
 		}
 		else
 		if (substr($t2[0],0,2) == '<'.'?')
 		{
-		//	eval(substr($t2[0],2,strlen($t2[0])-2-2));
-//			eval(substr($t2[0],2,strlen($t2[0])-2-2).';');
 			eval( substr($t2[0],strlen($t2[1]),strlen($t2[0])-strlen($t2[1])-strlen($t2[count($t2)-1])).';' );
 		}
 		else
@@ -741,6 +669,12 @@ else
 {
 	echo_content($response);
 }
+
+
+// ----------------------------------------------------------------------------
+
+
+if ($debug) echo( strace_line(__LINE__) );
 
 
 // ----------------------------------------------------------------------------

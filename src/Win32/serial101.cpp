@@ -517,7 +517,7 @@ union {
 // -----------------------------------------------------------------------------
 
 
-const char * subtrace_line(int line)
+const char * str_prog_line_millis(int line)
 {
 	static char buffer[128];
 	snprintf(buffer, sizeof(buffer), " %s:%i; millis:%li;",  __PROG__, line, millis());
@@ -526,8 +526,7 @@ const char * subtrace_line(int line)
 
 void trace_line(int line)
 {
-//	if (options.debug) printf(_BC_ _DG_ " %s:%i; millis:%li;" _EC_,  __PROG__, line, millis());
-	if (options.debug) printf(_BC_ _DG_ "%s" _EC_,  subtrace_line(line));
+	if (options.debug) printf(_BC_ _DG_ "%s" _EC_,  str_prog_line_millis(line));
 }
 
 
@@ -677,7 +676,7 @@ _exit:
 
 	// print encountered error...
 //	if (errcstr) printf(_BC_ _ER_ " %s:%i; millis:%li; errcode:%i; errcstr:%s;" _EC_, __PROG__, __LINE__, millis(), errcode, errcstr); // error message
-	if (errcstr) printf(_BC_ _ER_ "%s errcode:%i; errcstr:%s;" _EC_, subtrace_line(__LINE__), errcode, errcstr); // error message
+	if (errcstr) printf(_BC_ _ER_ "%s errcode:%i; errcstr:%s;" _EC_, str_prog_line_millis(__LINE__), errcode, errcstr); // error message
 
 	// close Serial...
 	if (Serial) Serial.end();
